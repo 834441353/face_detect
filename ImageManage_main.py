@@ -3,7 +3,9 @@ import sys
 import os
 import ImageManage_main_ui
 import ImageManage_mtcnndlib
+import ImageManage_test
 import cv2
+
 
 
 class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
@@ -21,13 +23,14 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
         self.imgfixflag = 0  # 图片修改是否完成FLAG
         self.pointnum = -1
         self.puttype = 1
+        self.tema = 0
         # self.ponitmax = 2
         self.x = 0
         self.y = 0
         self.tface = ImageManage_mtcnndlib.MtcnnDlib()
         self.labelshowpic(self.picshowLabel)
         self.savebutton.setEnabled(False)
-        self.testbutton.setEnabled(False)
+        # self.testbutton.setEnabled(False)
 
     def loadOnclicked(self):
         self.picpath = []
@@ -41,24 +44,34 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             QtWidgets.QMessageBox.critical(self, '错误', '请选择txt保存目录')
             self.txtoutpathEdit.setFocus()
             return
+        if not os.path.exists(self.txtpath):
+            os.makedirs(self.txtpath)
         self.rootpathlist = os.listdir(self.facePath)  # 总文件夹中的文件夹集合
         self.rootpathlistLen = len(self.rootpathlist)  # 总文件夹中的文件夹个数
         self.folderlenLabel.setText(str(self.rootpathlistLen))  # 文件夹个数
         self.tagfoldernum = self.startnumEdit.text()
         self.tagfolderLabel.setText(str(self.tagfoldernum))
         c = os.path.join(self.facePath, self.rootpathlist[int(self.tagfoldernum)])
-        # if not os.path.isdir(c):
-        #     self.nextdir()
-        #     return
         self.typefolderlsit = os.listdir(c)
-        # picfile = os.listdir(os.path.join(self.facePath, self.rootpathlist[int(self.tagfoldernum)]))
-        # print(picfile)
-        picfile = []
-        tempath = ''
+        # print(c)
         for i in self.typefolderlsit:
+
+            if i != 'Bmp':
+                continue
             tempath = os.path.join(self.facePath, self.rootpathlist[int(self.tagfoldernum)], i)
             a = os.listdir(tempath)
-            for j in a:
+            sort_a = []
+            for a_a in a:
+                sort_a.append(int(a_a.split('.')[0].split('_')[1]))
+            sort_a.sort()
+            # print(sort_a)
+            sort_filename = []
+            for sort_num in sort_a:
+                for filen in a:
+                    if str(sort_num) == filen.split('.')[0].split('_')[1]:
+                        sort_filename.append(filen)
+            print(sort_filename)
+            for j in sort_filename:
                 self.picpath.append(os.path.join(tempath, j))
         if self.picpath == []:
             a = self.nextdir()
@@ -67,18 +80,12 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             self.loadOnclicked()
             print('jump')
             return
-        # for j in self.typefolderlsit:
-        #     for i in picfile:
-        #         self.picpath.append(os.path.join(self.facePath, self.rootpathlist[int(self.tagfoldernum)], j, i))
-        # print(self.picpath)
 
     def startOnclicked(self):
         if self.picpath == []:
+            QtWidgets.QMessageBox.critical(self, '错误', '请加载文件夹')
             return 0
         self.tagpicnum = 0
-        # self.beingpicpath = self.picpath[self.tagpicnum]
-        # self.points = self.tface.detectFeature(self.beingpicpath)
-        # self.labelshowpic(self.picshowLabel, self.beingpicpath)
         self.getpoint()
         # print(self.points)
 
@@ -110,12 +117,18 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             swidget.setPixmap(QtGui.QPixmap.fromImage(QtImg))
 
     def testOnclicked(self):
-        print('test')
+        atest = ImageManage_test.testModule(self.txtpath)
+        a = atest.loadtxt()
+        if a == 0:
+            QtWidgets.QMessageBox.critical(self, '错误', 'txt文件异常')
 
     def saveOnclicked(self):
         print('save')
 
     def skipOnclicked(self):
+        if self.picpath == []:
+            QtWidgets.QMessageBox.critical(self, '错误', '请加载文件夹')
+            return 0
         self.tagpicnum += 1
         self.historytem = [[0, 0], [0, 0]]
 
@@ -325,6 +338,9 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             cv2.putText(self.beingimgcopy, "%d" % (i), (a[0], a[1]), cv2.FONT_HERSHEY_COMPLEX_SMALL, 2, (255, 0, 0))
 
     def fixOnclicked(self):
+        if self.picpath == []:
+            QtWidgets.QMessageBox.critical(self, '错误', '请加载文件夹')
+            return 0
         a = 1
         self.beingimgcopy = self.beingimg.copy()
         closeflag = 1
@@ -346,8 +362,6 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
         self.beingpicpath = self.picpath[self.tagpicnum]
         self.beingimg, self.points = self.tface.detectFeature(self.beingpicpath)
         tempic = self.beingimg.copy()
-        # print(len(self.points))
-        # print(self.points)
         if len(self.points) == 0:
 
             self.labelshowpic(self.picshowLabel, tempic)
@@ -365,6 +379,9 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             self.labelshowpic(self.picshowLabel, tempic)
 
     def nextOnclicked(self):
+        if self.picpath == []:
+            QtWidgets.QMessageBox.critical(self, '错误', '请加载文件夹')
+            return 0
         self.tagpicnum += 1
         if self.historytem != [[0, 0], [0, 0]]:
             self.facefeature.append(

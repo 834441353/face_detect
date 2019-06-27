@@ -53,12 +53,12 @@ class MtcnnDlib():
             img = cv2.imread(path, cv2.IMREAD_COLOR)  # cv2.IMREAD_GRAYSCALE  cv2.IMREAD_COLOR
 
             if img is None:
-                return None, None
+                return None, []
             else:
                 imgcopy = img.copy()
                 if img.ndim < 2:
                     # MtcnnDlib.text_file.write('erro %s\n' % (self.image_path))   ####
-                    return img, imgcopy
+                    return imgcopy, []
                 if img.ndim == 2:
                     img = to_rgb(img)
                 img = img[:, :, 0:3]
