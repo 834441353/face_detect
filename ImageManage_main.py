@@ -3,9 +3,7 @@ import sys
 import os
 import ImageManage_main_ui
 import ImageManage_mtcnndlib
-import ImageManage_test
 import cv2
-
 
 
 class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
@@ -15,7 +13,7 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
         self.facePath = ''  # 图片文件夹的根目录
         self.txtpath = ''  # txt文件（坐标文件）保存的路径
         self.facefeature = []  # 储存标记完成为图片路径和对应的特征点的字典
-        self.historytem = [[0, 0], [0, 0]]  # 储存标记的历史记录字典
+
         self.tagfoldernum = 0  # 当前所要处理的文件夹的ID
         self.tagpicnum = 0  # 当前要处理的图片的ID
         self.picpath = []  # 储存当前所要处理de文件夹的图片的集合
@@ -23,14 +21,16 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
         self.imgfixflag = 0  # 图片修改是否完成FLAG
         self.pointnum = -1
         self.puttype = 1
-        self.tema = 0
-        # self.ponitmax = 2
+        # self.ponitmax = 5
         self.x = 0
         self.y = 0
         self.tface = ImageManage_mtcnndlib.MtcnnDlib()
         self.labelshowpic(self.picshowLabel)
         self.savebutton.setEnabled(False)
-        # self.testbutton.setEnabled(False)
+        self.testbutton.setEnabled(False)
+
+        # self.historytem = [[0, 0], [0, 0]]
+        self.historytem = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]  # 储存标记的历史记录字典
 
     def loadOnclicked(self):
         self.picpath = []
@@ -44,34 +44,24 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             QtWidgets.QMessageBox.critical(self, '错误', '请选择txt保存目录')
             self.txtoutpathEdit.setFocus()
             return
-        if not os.path.exists(self.txtpath):
-            os.makedirs(self.txtpath)
         self.rootpathlist = os.listdir(self.facePath)  # 总文件夹中的文件夹集合
         self.rootpathlistLen = len(self.rootpathlist)  # 总文件夹中的文件夹个数
         self.folderlenLabel.setText(str(self.rootpathlistLen))  # 文件夹个数
         self.tagfoldernum = self.startnumEdit.text()
         self.tagfolderLabel.setText(str(self.tagfoldernum))
         c = os.path.join(self.facePath, self.rootpathlist[int(self.tagfoldernum)])
+        # if not os.path.isdir(c):
+        #     self.nextdir()
+        #     return
         self.typefolderlsit = os.listdir(c)
-        # print(c)
+        # picfile = os.listdir(os.path.join(self.facePath, self.rootpathlist[int(self.tagfoldernum)]))
+        # print(picfile)
+        picfile = []
+        tempath = ''
         for i in self.typefolderlsit:
-
-            if i != 'Bmp':
-                continue
             tempath = os.path.join(self.facePath, self.rootpathlist[int(self.tagfoldernum)], i)
             a = os.listdir(tempath)
-            sort_a = []
-            for a_a in a:
-                sort_a.append(int(a_a.split('.')[0].split('_')[1]))
-            sort_a.sort()
-            # print(sort_a)
-            sort_filename = []
-            for sort_num in sort_a:
-                for filen in a:
-                    if str(sort_num) == filen.split('.')[0].split('_')[1]:
-                        sort_filename.append(filen)
-            print(sort_filename)
-            for j in sort_filename:
+            for j in a:
                 self.picpath.append(os.path.join(tempath, j))
         if self.picpath == []:
             a = self.nextdir()
@@ -80,12 +70,18 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             self.loadOnclicked()
             print('jump')
             return
+        # for j in self.typefolderlsit:
+        #     for i in picfile:
+        #         self.picpath.append(os.path.join(self.facePath, self.rootpathlist[int(self.tagfoldernum)], j, i))
+        # print(self.picpath)
 
     def startOnclicked(self):
         if self.picpath == []:
-            QtWidgets.QMessageBox.critical(self, '错误', '请加载文件夹')
             return 0
         self.tagpicnum = 0
+        # self.beingpicpath = self.picpath[self.tagpicnum]
+        # self.points = self.tface.detectFeature(self.beingpicpath)
+        # self.labelshowpic(self.picshowLabel, self.beingpicpath)
         self.getpoint()
         # print(self.points)
 
@@ -117,20 +113,15 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             swidget.setPixmap(QtGui.QPixmap.fromImage(QtImg))
 
     def testOnclicked(self):
-        atest = ImageManage_test.testModule(self.txtpath)
-        a = atest.loadtxt()
-        if a == 0:
-            QtWidgets.QMessageBox.critical(self, '错误', 'txt文件异常')
+        print('test')
 
     def saveOnclicked(self):
         print('save')
 
     def skipOnclicked(self):
-        if self.picpath == []:
-            QtWidgets.QMessageBox.critical(self, '错误', '请加载文件夹')
-            return 0
         self.tagpicnum += 1
-        self.historytem = [[0, 0], [0, 0]]
+        # self.historytem = [[0, 0], [0, 0]]
+        self.historytem = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
 
         if int(self.tagpicnum) + 1 > len(self.picpath):
             self.txtwrite()
@@ -158,7 +149,7 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             self.drawcircle()
         elif self.puttype == 1:
             self.pointnum += 1
-            if self.pointnum == 2:
+            if self.pointnum == 5:
                 self.pointnum -= 1
                 return
 
@@ -338,9 +329,6 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             cv2.putText(self.beingimgcopy, "%d" % (i), (a[0], a[1]), cv2.FONT_HERSHEY_COMPLEX_SMALL, 2, (255, 0, 0))
 
     def fixOnclicked(self):
-        if self.picpath == []:
-            QtWidgets.QMessageBox.critical(self, '错误', '请加载文件夹')
-            return 0
         a = 1
         self.beingimgcopy = self.beingimg.copy()
         closeflag = 1
@@ -362,12 +350,19 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
         self.beingpicpath = self.picpath[self.tagpicnum]
         self.beingimg, self.points = self.tface.detectFeature(self.beingpicpath)
         tempic = self.beingimg.copy()
+        # print(len(self.points))
+        # print(self.points)
         if len(self.points) == 0:
 
             self.labelshowpic(self.picshowLabel, tempic)
         else:
+            # self.historytem[0] = [int(round(self.points[0][0])), int(round(self.points[5][0]))]
+            # self.historytem[1] = [int(round(self.points[1][0])), int(round(self.points[6][0]))]
             self.historytem[0] = [int(round(self.points[0][0])), int(round(self.points[5][0]))]
             self.historytem[1] = [int(round(self.points[1][0])), int(round(self.points[6][0]))]
+            self.historytem[2] = [int(round(self.points[2][0])), int(round(self.points[7][0]))]
+            self.historytem[3] = [int(round(self.points[3][0])), int(round(self.points[8][0]))]
+            self.historytem[4] = [int(round(self.points[4][0])), int(round(self.points[9][0]))]
             i = -1
             self.pointnum = 1
             for a in self.historytem:
@@ -379,16 +374,19 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             self.labelshowpic(self.picshowLabel, tempic)
 
     def nextOnclicked(self):
-        if self.picpath == []:
-            QtWidgets.QMessageBox.critical(self, '错误', '请加载文件夹')
-            return 0
         self.tagpicnum += 1
         if self.historytem != [[0, 0], [0, 0]]:
             self.facefeature.append(
                 [self.beingpicpath, int(round(self.historytem[0][0])), int(round(self.historytem[0][1])),
-                 int(round(self.historytem[1][0])),
-                 int(round(self.historytem[1][1]))])
-        self.historytem = [[0, 0], [0, 0]]
+                 int(round(self.historytem[1][0])), int(round(self.historytem[1][1])),
+                 int(round(self.historytem[2][0])), int(round(self.historytem[2][1])),
+                 int(round(self.historytem[3][0])), int(round(self.historytem[3][1])),
+                 int(round(self.historytem[4][0])), int(round(self.historytem[4][1]))])
+            # self.facefeature.append(
+            #     [self.beingpicpath, int(round(self.historytem[0][0])), int(round(self.historytem[0][1])),
+            #      int(round(self.historytem[1][0])), int(round(self.historytem[1][1]))])
+        # self.historytem = [[0, 0], [0, 0]]
+        self.historytem = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
 
         if int(self.tagpicnum) + 1 > len(self.picpath):
             self.txtwrite()
@@ -408,7 +406,11 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
 
         with open(txtpathname, 'w') as f:
             for a in self.facefeature:
-                context = str(a[0]) + ' ' + str(a[1]) + ' ' + str(a[2]) + ' ' + str(a[3]) + ' ' + str(a[4]) + '\r'
+
+                # context = str(a[0]) + ' ' + str(a[1]) + ' ' + str(a[2]) + ' ' + str(a[3]) + ' ' + str(a[4]) + '\r'
+                context = str(a[0]) + ' ' + str(a[1]) + ' ' + str(a[2]) + ' ' + str(a[3]) + ' ' + str(a[4]) + ' ' + str(
+                    a[5]) + ' ' + str(a[6]) + ' ' + str(a[7]) + ' ' + str(a[8]) + ' ' + str(a[9]) + ' ' + str(
+                    a[10]) + '\r'
                 f.writelines(context)
         self.facefeature = []
 

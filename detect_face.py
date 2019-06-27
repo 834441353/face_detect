@@ -370,7 +370,7 @@ def detect_face(img, minsize, pnet, rnet, onet, threshold, factor):
             if tmp.shape[0] > 0 and tmp.shape[1] > 0 or tmp.shape[0] == 0 and tmp.shape[1] == 0:
                 tempimg[:, :, :, k] = imresample(tmp, (24, 24))
             else:
-                return np.empty(),[]
+                return np.empty()
         tempimg = (tempimg - 127.5) * 0.0078125
         tempimg1 = np.transpose(tempimg, (3, 1, 0, 2))
         out = rnet(tempimg1)
@@ -398,7 +398,7 @@ def detect_face(img, minsize, pnet, rnet, onet, threshold, factor):
             if tmp.shape[0] > 0 and tmp.shape[1] > 0 or tmp.shape[0] == 0 and tmp.shape[1] == 0:
                 tempimg[:, :, :, k] = imresample(tmp, (48, 48))
             else:
-                return np.empty(),[]
+                return np.empty()
         tempimg = (tempimg - 127.5) * 0.0078125
         tempimg1 = np.transpose(tempimg, (3, 1, 0, 2))
         out = onet(tempimg1)
