@@ -53,10 +53,25 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
         self.tagfolderLabel.setText(str(self.tagfoldernum))
         c = os.path.join(self.facePath, self.rootpathlist[int(self.tagfoldernum)])
         self.typefolderlsit = os.listdir(c)
+        # print(c)
         for i in self.typefolderlsit:
+
+            if i != 'Bmp':
+                continue
             tempath = os.path.join(self.facePath, self.rootpathlist[int(self.tagfoldernum)], i)
             a = os.listdir(tempath)
-            for j in a:
+            sort_a = []
+            for a_a in a:
+                sort_a.append(int(a_a.split('.')[0].split('_')[1]))
+            sort_a.sort()
+            # print(sort_a)
+            sort_filename = []
+            for sort_num in sort_a:
+                for filen in a:
+                    if str(sort_num) == filen.split('.')[0].split('_')[1]:
+                        sort_filename.append(filen)
+            print(sort_filename)
+            for j in sort_filename:
                 self.picpath.append(os.path.join(tempath, j))
         if self.picpath == []:
             a = self.nextdir()
