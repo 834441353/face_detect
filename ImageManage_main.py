@@ -13,7 +13,7 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
         self.facePath = ''  # 图片文件夹的根目录
         self.txtpath = ''  # txt文件（坐标文件）保存的路径
         self.facefeature = []  # 储存标记完成为图片路径和对应的特征点的字典
-        self.historytem = [[0, 0], [0, 0]]  # 储存标记的历史记录字典
+
         self.tagfoldernum = 0  # 当前所要处理的文件夹的ID
         self.tagpicnum = 0  # 当前要处理的图片的ID
         self.picpath = []  # 储存当前所要处理de文件夹的图片的集合
@@ -21,13 +21,16 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
         self.imgfixflag = 0  # 图片修改是否完成FLAG
         self.pointnum = -1
         self.puttype = 1
-        # self.ponitmax = 2
+        # self.ponitmax = 5
         self.x = 0
         self.y = 0
         self.tface = ImageManage_mtcnndlib.MtcnnDlib()
         self.labelshowpic(self.picshowLabel)
         self.savebutton.setEnabled(False)
         self.testbutton.setEnabled(False)
+
+        # self.historytem = [[0, 0], [0, 0]]
+        self.historytem = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]  # 储存标记的历史记录字典
 
     def loadOnclicked(self):
         self.picpath = []
@@ -117,7 +120,8 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
 
     def skipOnclicked(self):
         self.tagpicnum += 1
-        self.historytem = [[0, 0], [0, 0]]
+        # self.historytem = [[0, 0], [0, 0]]
+        self.historytem = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
 
         if int(self.tagpicnum) + 1 > len(self.picpath):
             self.txtwrite()
@@ -145,7 +149,7 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
             self.drawcircle()
         elif self.puttype == 1:
             self.pointnum += 1
-            if self.pointnum == 2:
+            if self.pointnum == 5:
                 self.pointnum -= 1
                 return
 
@@ -352,8 +356,13 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
 
             self.labelshowpic(self.picshowLabel, tempic)
         else:
+            # self.historytem[0] = [int(round(self.points[0][0])), int(round(self.points[5][0]))]
+            # self.historytem[1] = [int(round(self.points[1][0])), int(round(self.points[6][0]))]
             self.historytem[0] = [int(round(self.points[0][0])), int(round(self.points[5][0]))]
             self.historytem[1] = [int(round(self.points[1][0])), int(round(self.points[6][0]))]
+            self.historytem[2] = [int(round(self.points[2][0])), int(round(self.points[7][0]))]
+            self.historytem[3] = [int(round(self.points[3][0])), int(round(self.points[8][0]))]
+            self.historytem[4] = [int(round(self.points[4][0])), int(round(self.points[9][0]))]
             i = -1
             self.pointnum = 1
             for a in self.historytem:
@@ -369,9 +378,15 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
         if self.historytem != [[0, 0], [0, 0]]:
             self.facefeature.append(
                 [self.beingpicpath, int(round(self.historytem[0][0])), int(round(self.historytem[0][1])),
-                 int(round(self.historytem[1][0])),
-                 int(round(self.historytem[1][1]))])
-        self.historytem = [[0, 0], [0, 0]]
+                 int(round(self.historytem[1][0])), int(round(self.historytem[1][1])),
+                 int(round(self.historytem[2][0])), int(round(self.historytem[2][1])),
+                 int(round(self.historytem[3][0])), int(round(self.historytem[3][1])),
+                 int(round(self.historytem[4][0])), int(round(self.historytem[4][1]))])
+            # self.facefeature.append(
+            #     [self.beingpicpath, int(round(self.historytem[0][0])), int(round(self.historytem[0][1])),
+            #      int(round(self.historytem[1][0])), int(round(self.historytem[1][1]))])
+        # self.historytem = [[0, 0], [0, 0]]
+        self.historytem = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
 
         if int(self.tagpicnum) + 1 > len(self.picpath):
             self.txtwrite()
@@ -391,7 +406,11 @@ class ImageManageMain(QtWidgets.QMainWindow, ImageManage_main_ui.Ui_MainWindow):
 
         with open(txtpathname, 'w') as f:
             for a in self.facefeature:
-                context = str(a[0]) + ' ' + str(a[1]) + ' ' + str(a[2]) + ' ' + str(a[3]) + ' ' + str(a[4]) + '\r'
+
+                # context = str(a[0]) + ' ' + str(a[1]) + ' ' + str(a[2]) + ' ' + str(a[3]) + ' ' + str(a[4]) + '\r'
+                context = str(a[0]) + ' ' + str(a[1]) + ' ' + str(a[2]) + ' ' + str(a[3]) + ' ' + str(a[4]) + ' ' + str(
+                    a[5]) + ' ' + str(a[6]) + ' ' + str(a[7]) + ' ' + str(a[8]) + ' ' + str(a[9]) + ' ' + str(
+                    a[10]) + '\r'
                 f.writelines(context)
         self.facefeature = []
 
